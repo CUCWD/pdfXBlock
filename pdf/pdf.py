@@ -1,8 +1,10 @@
 """ pdfXBlock main Python class"""
 
 import pkg_resources
+from django.conf import settings
 from django.template import Context, Template
 
+from xblock.completable import XBlockCompletionMode
 from xblock.core import XBlock
 from xblock.fields import Scope, String, Boolean
 from xblock.fragment import Fragment
@@ -21,6 +23,19 @@ class PdfBlock(
     XBlockWithSettingsMixin,
     ThemableXBlockMixin
 ):
+    COMPLETION_CONDITION_VIEWING_DELAY = "viewing_delay"   # After N seconds visible
+    COMPLETION_CONDITION_LAST_PAGE = "last_page"
+    COMPLETION_CONDITION_SCROLL_BOTTOM = "scroll_bottom"
+    
+    # The pdf block is responsible for declaring when it is completed.
+    completion_mode = XBlockCompletionMode.COMPLETABLE
+
+    # User state field to track completion and avoid re-firing completion events.
+    is_completed = Boolean(default=False, scope=Scope.user_state)
+
+    # Default viewing delay for completion, in milliseconds.
+    # Can be overridden by Django setting COMPLETION_BY_VIEWING_DELAY_MS
+    viewing_delay_ms = getattr(settings, "COMPLETION_BY_VIEWING_DELAY_MS", 5000)
 
     '''
     Icon of the XBlock. Values : [other (default), video, problem]
@@ -42,6 +57,27 @@ class PdfBlock(
         default=_("http://tutorial.math.lamar.edu/pdf/Trig_Cheat_Sheet.pdf"),
         scope=Scope.content,
         help=_("The URL for your PDF.")
+    )
+
+    completion_condition = String(
+        display_name=_("Completion Condition"),
+        scope=Scope.settings,
+        default=COMPLETION_CONDITION_VIEWING_DELAY,
+        values=[
+            COMPLETION_CONDITION_VIEWING_DELAY,
+            COMPLETION_CONDITION_LAST_PAGE,
+            COMPLETION_CONDITION_SCROLL_BOTTOM,
+        ],
+        help=_(
+            "How this PDF unit is marked complete: "
+            "After viewing for ${viewing_delay_seconds} delay, when last page is viewed, or when scrolled to bottom."
+        ),
+    )
+    viewing_delay_seconds = String(
+        display_name=_("Viewing Delay (seconds)"),
+        default=getattr(settings, "COMPLETION_BY_VIEWING_DELAY_MS", 5000) // 1000,
+        scope=Scope.settings,
+        help=_("Time in seconds before the PDF is marked as viewed for completion.")
     )
 
     allow_download = Boolean(
@@ -99,6 +135,8 @@ class PdfBlock(
         context = {
             'display_name': self.display_name,
             'url': self.url,
+            'completion_condition': self.completion_condition,
+            'viewing_delay_seconds': self.viewing_delay_seconds,
             'allow_download': self.allow_download,
             'source_text': self.source_text,
             'source_url': self.source_url,
@@ -118,7 +156,10 @@ class PdfBlock(
         self.runtime.publish(self, event_type, event_data)
         frag = Fragment(html)
         frag.add_javascript(self.load_resource("static/js/pdf_view.js"))
-        frag.initialize_js('pdfXBlockInitView')
+        frag.initialize_js('pdfXBlockInitView', {
+            "completionCondition": self.completion_condition,
+            "completionDelayMs": self.viewing_delay_ms,
+        })
         return frag
 
     def studio_view(self, context=None):
@@ -130,6 +171,8 @@ class PdfBlock(
             'display_name': self.display_name,
             'name_help': _("This name appears in the horizontal navigation at the top of the page."),
             'url': self.url,
+            'completion_condition': self.completion_condition,
+            'viewing_delay_seconds': self.viewing_delay_ms // 1000,
             'allow_download': self.allow_download,
             'source_text': self.source_text,
             'source_url': self.source_url
@@ -141,7 +184,10 @@ class PdfBlock(
         )
         frag = Fragment(html)
         frag.add_javascript(self.load_resource("static/js/pdf_edit.js"))
-        frag.initialize_js('pdfXBlockInitEdit')
+        frag.initialize_js('pdfXBlockInitEdit', {
+            "completionCondition": self.completion_condition,
+            "completionDelayMs": self.viewing_delay_ms,
+        })
         return frag
 
     @XBlock.json_handler
@@ -163,6 +209,7 @@ class PdfBlock(
         """
         self.display_name = data['display_name']
         self.url = data['url']
+        self.completion_condition = data['completion_condition']
         self.allow_download = True if data['allow_download'] == "True" else False  # Str to Bool translation
         self.source_text = data['source_text']
         self.source_url = data['source_url']
@@ -179,3 +226,27 @@ class PdfBlock(
             return i18n_service
         else:
             return DummyTranslationService()
+        
+    @XBlock.json_handler
+    def mark_completed(self, data, suffix=""):
+        """
+        Called by the frontend when the learner has met completion criteria.
+        """
+        if self.is_completed:
+            return {"completed": True}
+
+        self.is_completed = True
+
+        # Publish completion for the runtime to record in completion storage.
+        # 1.0 = 100% complete.
+        self.runtime.publish(self, "completion", {"completion": 1.0})
+
+        # Log a tracking event for analytics symmetry with edx.pdf.loaded.
+        event_type = 'edx.pdf.completed'
+        event_data = {
+            'url': self.url,
+            'source_url': self.source_url,
+        }
+        self.runtime.publish(self, event_type, event_data)
+
+        return {"completed": True}

@@ -22,6 +22,25 @@
 
     <li class="field comp-setting-entry is-set">
       <div class="wrapper-comp-setting">
+        <label class="label setting-label" for="pdf_edit_completion_condition">{% trans "Completion Condition" %}</label>  
+        <select id="pdf_edit_completion_condition" name="pdf_edit_completion_condition">
+          <option value="viewing_delay" {% if completion_condition == "viewing_delay" %}selected{% endif %}>
+            {% blocktrans with secs=viewing_delay_seconds %}After {{ secs }} seconds (when visible){% endblocktrans %}
+          </option>
+          <!-- Todo: Need to implement these options with PDF.js installed rather than browser default PDF render to get events from bus. -->
+          <!-- <option value="last_page" {% if completion_condition == "last_page" %}selected{% endif %}>
+            {{ _("When last page is viewed") }}
+          </option>
+          <option value="scroll_bottom" {% if completion_condition == "scroll_bottom" %}selected{% endif %}>
+            {{ _("When user scrolls to the bottom") }}
+          </option> -->
+        </select>
+      </div>
+      <span class="tip setting-help">{% trans "Condition for marking this PDF unit as complete." %}</span>
+    </li>
+
+    <li class="field comp-setting-entry is-set">
+      <div class="wrapper-comp-setting">
         <label class="label setting-label" for="pdf_edit_allow_download">{% trans "PDF Download Allowed" %}</label>
         <select class="input setting-input" id="pdf_edit_allow_download">
           <option value="True" {% if allow_download %}selected{% endif %}>{% trans "True" %}</option>
