@@ -1,2 +1,12 @@
-*.pyc
+*.egg-info/
 node_modules/
+*.log
+package-lock.json
+*.pyc
+*.sw[op]
+.tox/
+sdk/
+venv/
+.idea/
+
+.dockerignore
