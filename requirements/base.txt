@@ -1,0 +1,2 @@
+# Install into a provisioned edx-platform environment.
+-r base.in
