@@ -1,3 +1,4 @@
+/* exported pdfXBlockInitView */
 /* Javascript for pdfXBlock. */
 function pdfXBlockInitView(runtime, element, initArgs) {
     /* Weird behaviour :
@@ -90,18 +91,6 @@ function pdfXBlockInitView(runtime, element, initArgs) {
         });
     }
 
-
-    // ---- Condition: last_page ----
-    function initLastPageCompletion() {
-        // This works only if you're using PDF.js
-        // Not implemented yet
-    }
-
-    // ---- Condition: scroll_bottom ----
-    function initScrollBottomCompletion() {
-        // This works only if you're using PDF.js
-        // Not implemented yet
-    }
 
     // ---- Condition: viewing_delay ----
     function initViewingDelayCompletion() {

@@ -1,3 +1,4 @@
+/* exported pdfXBlockInitEdit */
 /* Javascript for pdfXBlock. */
 function pdfXBlockInitEdit(runtime, element) {
     $(element).find('.action-cancel').bind('click', function () {

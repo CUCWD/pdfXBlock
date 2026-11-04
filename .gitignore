@@ -1,7 +1,6 @@
 *.egg-info/
 node_modules/
 *.log
-package-lock.json
 *.pyc
 *.sw[op]
 .tox/
@@ -10,3 +9,9 @@ venv/
 .idea/
 
 .dockerignore
+
+.coverage
+.coverage.*
+htmlcov/
+build/
+dist/

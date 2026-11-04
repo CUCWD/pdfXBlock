@@ -1,0 +1,6 @@
+# Runtime versions belong to the host edx-platform environment.
+# Do not include development constraints or compiled pins here.
+Django
+XBlock
+web-fragments
+setuptools
