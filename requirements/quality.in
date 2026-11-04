@@ -1,0 +1,5 @@
+# Formatting tools are isolated from the host platform's runtime dependencies.
+-c ulmo-constraints.txt
+isort
+# Match the LTI plugin's checker; Ulmo's pycodestyle 2.8 cannot parse Python 3.12.
+pycodestyle==2.14.0

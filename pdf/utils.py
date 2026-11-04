@@ -2,11 +2,9 @@
 """ PDF XBlock - Utils """
 
 
-
 def _(text):
     """ Dummy `gettext` replacement to make string extraction tools scrape strings marked for translation """
     return text
-
 
 
 def ngettext_fallback(text_singular, text_plural, number):
@@ -23,4 +21,3 @@ class DummyTranslationService(object):
     """
     gettext = _
     ngettext = ngettext_fallback
-

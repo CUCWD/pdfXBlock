@@ -3,17 +3,18 @@
 import pkg_resources
 from django.conf import settings
 from django.template import Context, Template
-
+from web_fragments.fragment import Fragment
 from xblock.completable import XBlockCompletionMode
 from xblock.core import XBlock
-from xblock.fields import Scope, String, Boolean
-from web_fragments.fragment import Fragment
-from xblock.utils.resources import ResourceLoader
-from xblock.utils.settings import XBlockWithSettingsMixin, ThemableXBlockMixin
+from xblock.fields import Boolean, Scope, String
 from xblock.scorable import ScorableXBlockMixin, Score
-from .utils import _, DummyTranslationService
+from xblock.utils.resources import ResourceLoader
+from xblock.utils.settings import ThemableXBlockMixin, XBlockWithSettingsMixin
+
+from .utils import DummyTranslationService, _
 
 loader = ResourceLoader(__name__)
+
 
 @XBlock.wants('settings')
 @XBlock.needs('i18n')
@@ -26,7 +27,7 @@ class PdfBlock(
     COMPLETION_CONDITION_VIEWING_DELAY = "viewing_delay"   # After N seconds visible
     COMPLETION_CONDITION_LAST_PAGE = "last_page"
     COMPLETION_CONDITION_SCROLL_BOTTOM = "scroll_bottom"
-    
+
     # The pdf block is responsible for declaring when it is completed.
     completion_mode = XBlockCompletionMode.COMPLETABLE
 
@@ -93,7 +94,7 @@ class PdfBlock(
         scope=Scope.content,
         help=_(
             "Add a download link for the source file of your PDF. "
-             "Use it for example to provide the PowerPoint file used to create this PDF."
+            "Use it for example to provide the PowerPoint file used to create this PDF."
         )
     )
 
@@ -103,7 +104,7 @@ class PdfBlock(
         scope=Scope.content,
         help=_(
             "Add a download link for the source file of your PDF. "
-             "Use it for example to provide the PowerPoint file used to create this PDF."
+            "Use it for example to provide the PowerPoint file used to create this PDF."
         )
     )
 
@@ -226,7 +227,7 @@ class PdfBlock(
             return i18n_service
         else:
             return DummyTranslationService()
-        
+
     @XBlock.json_handler
     def mark_completed(self, data, suffix=""):
         """

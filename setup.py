@@ -3,8 +3,8 @@
 import os
 import re
 from pathlib import Path
-from setuptools import setup
 
+from setuptools import setup
 
 ROOT = Path(__file__).resolve().parent
 

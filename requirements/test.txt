@@ -1,3 +1,5 @@
 # Standalone tests use Ulmo versions without constraining package metadata.
 -c ulmo-constraints.txt
 -r base.in
+# Django is selected in tox; coverage matches Ulmo testing requirements.
+coverage
